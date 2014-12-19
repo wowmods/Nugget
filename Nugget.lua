@@ -23,67 +23,66 @@ local NuggetDataDefaults = {
 }
 
 function Nugget_Initialize()
-HERE	
-	if FarmhandData == nil then
-		FarmhandData = FarmhandDataDefaults
+	if NuggetData == nil then
+		NuggetData = NuggetDataDefaults
 	else
-		for k, v in pairs(FarmhandDataDefaults) do
-			if FarmhandData[k] == nil then FarmhandData[k] = v end
+		for k, v in pairs(NuggetDataDefaults) do
+			if NuggetData[k] == nil then NuggetData[k] = v end
 		end
 	end
 
-	FarmhandToolsLockOption:SetChecked(FarmhandData.ToolsLocked)
-	FarmhandMessagesOption:SetChecked(FarmhandData.PrintScannerMessages)
-	FarmhandSoundsOption:SetChecked(FarmhandData.PlayScannerSounds)
-	FarmhandPortalsOption:SetChecked(FarmhandData.ShowPortals)
-	FarmhandHideInCombatOption:SetChecked(FarmhandData.HideInCombat)
-	FarmhandStockTipOption:SetChecked(FarmhandData.ShowStockTip)
+	NuggetLockOption:SetChecked(NuggetData.ToolsLocked)
+	NuggetMessagesOption:SetChecked(NuggetData.PrintScannerMessages)
+	NuggetSoundsOption:SetChecked(NuggetData.PlayScannerSounds)
+	NuggetPortalsOption:SetChecked(NuggetData.ShowPortals)
+	NuggetHideInCombatOption:SetChecked(NuggetData.HideInCombat)
+	NuggetStockTipOption:SetChecked(NuggetData.ShowStockTip)
 
-	FarmhandSeedIconOption:SetChecked(FarmhandData.ShowVeggieIconsForSeeds)
-	FarmhandBagIconOption:SetChecked(FarmhandData.ShowVeggieIconsForBags)
+	NuggetSeedIconOption:SetChecked(NuggetData.ShowVeggieIconsForSeeds)
+	NuggetBagIconOption:SetChecked(NuggetData.ShowVeggieIconsForBags)
 	
-	Farmhand_UpdateMiscToolsCheckboxes()
+	Nugget_UpdateMiscToolsCheckboxes()
 	
-	if not FarmhandData.ShowStockTip then UIDropDownMenu_DisableDropDown(Farmhand.StockTipPositionDropdown) end
+	if not NuggetData.ShowStockTip then UIDropDownMenu_DisableDropDown(Nugget.StockTipPositionDropdown) end
 	
-	if FarmhandData.StockTipPosition == "BELOW" then
-		UIDropDownMenu_SetText(Farmhand.StockTipPositionDropdown, L["Below Normal Tooltip"])
+	if NuggetData.StockTipPosition == "BELOW" then
+		UIDropDownMenu_SetText(Nugget.StockTipPositionDropdown, L["Below Normal Tooltip"])
 	else
-		UIDropDownMenu_SetText(Farmhand.StockTipPositionDropdown, L["Right of Normal Tooltip"])
+		UIDropDownMenu_SetText(Nugget.StockTipPositionDropdown, L["Right of Normal Tooltip"])
 	end
 	
-	for Seed, Veggie in pairs(FH.VeggiesBySeed) do --Attempt to pre-cache item info
+	for Seed, Veggie in pairs(NUGGET.VeggiesBySeed) do --Attempt to pre-cache item info
 		GetItemInfo(Seed)
 		GetItemInfo(Veggie)
 	end
 
-	--print("Intial X="..FarmhandData.X.." Y="..FarmhandData.Y)
-	Farmhand:SetPoint("Center",UIParent,"Center",FarmhandData.X,FarmhandData.Y)
+	--print("Intial X="..NuggetData.X.." Y="..NuggetData.Y)
+	Nugget:SetPoint("Center",UIParent,"Center",NuggetData.X,NuggetData.Y)
 	
-	FarmhandSeeds.Update = Farmhand_UpdateBar
-	FarmhandTools.Update = Farmhand_UpdateBar
-	FarmhandPortals.Update = Farmhand_UpdateBar
+	NuggetSeeds.Update = Nugget_UpdateBar
+	NuggetTools.Update = Nugget_UpdateBar
+	NuggetPortals.Update = Nugget_UpdateBar
 	
-	hooksecurefunc("MerchantItemButton_OnEnter", Farmhand_MerchantButtonOnEnter)
+	hooksecurefunc("MerchantItemButton_OnEnter", Nugget_MerchantButtonOnEnter)
 	
 end
 
-function Farmhand_UpdateMiscToolsCheckboxes()
+function Nugget_UpdateMiscToolsCheckboxes()
 	local AllChecked = true
-	local Choices = FarmhandData.ShowMiscTools or {}
-	for _, v in ipairs(FH.MiscTools) do
-		local btn = _G["FarmhandMiscToolsOption"..v]
+	local Choices = NuggetData.ShowMiscTools or {}
+	for _, v in ipairs(NUGGET.MiscTools) do
+		local btn = _G["NuggetMiscToolsOption"..v]
 		if btn then
 			btn:SetChecked(Choices[v] or false)
 			AllChecked = AllChecked and Choices[v] or false
 		end
 	end
-	btn = _G["FarmhandMiscToolsOption"]
+	btn = _G["NuggetMiscToolsOption"]
 	btn:SetChecked(AllChecked)
 end
 
-function Farmhand_MerchantEvent(MerchantOpen)
-	FH.MerchantOpen = MerchantOpen
+function Nugget_MerchantEvent(MerchantOpen)
+	NUGGET.MerchantOpen = MerchantOpen
 end
 
 local itemCounts = {}
@@ -110,22 +109,22 @@ local function AddCharacterCountLine(character, searchedID)
 		end
 
 		-- charInfo should look like 	(Bags: 4, Bank: 8, Equipped: 1, Mail: 7), table concat takes care of this
-		Farmhand.StockTip:AddDoubleLine(name, format("%s (%s%s)", ORANGE .. charCount .. WHITE, table.concat(t, WHITE..", "), WHITE))
+		Nugget.StockTip:AddDoubleLine(name, format("%s (%s%s)", ORANGE .. charCount .. WHITE, table.concat(t, WHITE..", "), WHITE))
 	end
 end
 
-function Farmhand_MerchantButtonOnEnter(button)
-	if ( MerchantFrame.selectedTab == 1 ) and FarmhandData.ShowStockTip and FH.MerchantOpen then
+function Nugget_MerchantButtonOnEnter(button)
+	if ( MerchantFrame.selectedTab == 1 ) and NuggetData.ShowStockTip and NUGGET.MerchantOpen then
 		local link = GetMerchantItemLink(button:GetID())
 		if link == nil then return end
 		local _, _, ItemID = string.find(link, "|?c?f?f?%x*|?H?[^:]*:?(%d+):?%d*:?%d*:?%d*:?%d*:?%d*:?%-?%d*:?%-?%d*:?%d*:?%d*|?h?%[?[^%[%]]*]?|?h?|?r?")
 		if ItemID == nil then return end
 		ItemID = tonumber(ItemID)
-		local VeggieID = FH.VeggiesBySeed[ItemID]
+		local VeggieID = NUGGET.VeggiesBySeed[ItemID]
 		if VeggieID == nil then
-			ItemID = FH.SeedsBySeedBag[ItemID]
+			ItemID = NUGGET.SeedsBySeedBag[ItemID]
 			if ItemID == nil then return end
-			VeggieID = FH.VeggiesBySeed[ItemID]
+			VeggieID = NUGGET.VeggiesBySeed[ItemID]
 		end
 		if VeggieID then
 			local veggieName = GetItemInfo(VeggieID)
@@ -136,24 +135,24 @@ function Farmhand_MerchantButtonOnEnter(button)
 			icon = icon and "|T"..icon..":14:14:0:0:32:32:3:29:3:29|t" or "??"
 			veggieName = veggieName and icon.." "..veggieName or icon.." ".."ItemID: "..VeggieID
 			--print(VeggieID, veggieName, onHand, inBank,icon)
-			Farmhand.StockTip:SetOwner(button:GetParent(), "ANCHOR_NONE");
-			Farmhand.StockTip:ClearAllPoints();
-			if FarmhandData.StockTipPosition == "BELOW" then
-				Farmhand.StockTip:SetPoint("TopLeft", button:GetParent(), "TopRight", 0, 0);
+			Nugget.StockTip:SetOwner(button:GetParent(), "ANCHOR_NONE");
+			Nugget.StockTip:ClearAllPoints();
+			if NuggetData.StockTipPosition == "BELOW" then
+				Nugget.StockTip:SetPoint("TopLeft", button:GetParent(), "TopRight", 0, 0);
 			else
-				Farmhand.StockTip:SetPoint("BottomLeft", button, "TopRight", GameTooltip:GetWidth(), 0);
+				Nugget.StockTip:SetPoint("BottomLeft", button, "TopRight", GameTooltip:GetWidth(), 0);
 			end
-			Farmhand.StockTip:AddDoubleLine(L["Produces"],veggieName,0,255,0)
+			Nugget.StockTip:AddDoubleLine(L["Produces"],veggieName,0,255,0)
 
 			if DataStore then
 
-				Farmhand.StockTip:AddLine(" ")
+				Nugget.StockTip:AddLine(" ")
 				
 				local ThisChar = DataStore:GetCharacter()
 				
 				AddCharacterCountLine(ThisChar,VeggieID)
 
-				Farmhand.StockTip:AddLine(" ")
+				Nugget.StockTip:AddLine(" ")
 				
 				for name, character in pairs(DataStore:GetCharacters(GetRealmName(), "Default")) do
 					if name ~= UnitName("player") and DataStore:GetCharacterFaction(character) == UnitFactionGroup("player") then
@@ -161,37 +160,37 @@ function Farmhand_MerchantButtonOnEnter(button)
 					end
 				end
 
-				Farmhand.StockTip:AddLine(" ")
+				Nugget.StockTip:AddLine(" ")
 
 				for guildName, guildKey in pairs(DataStore:GetGuilds(GetRealmName())) do				-- this realm only
 					guildCount = DataStore:GetGuildBankItemCount(guildKey, VeggieID) or 0
 					if guildCount > 0 then
-						Farmhand.StockTip:AddDoubleLine(GREEN..guildName, format("%s(%s: %s%s)", WHITE, "Guild Bank", TEAL..guildCount, WHITE))
+						Nugget.StockTip:AddDoubleLine(GREEN..guildName, format("%s(%s: %s%s)", WHITE, "Guild Bank", TEAL..guildCount, WHITE))
 					end
 				end
 
 			else
-				Farmhand.StockTip:AddDoubleLine(L["On Hand"],onHand,0,255,0,255,255,255)
-				Farmhand.StockTip:AddDoubleLine(L["In Bank"],inBank,0,255,0,255,255,255)
-				FarmhandMerchantStockTipTextRight2:ClearAllPoints()
-				FarmhandMerchantStockTipTextRight2:SetPoint("TopLeft",FarmhandMerchantStockTipTextRight1,"BottomLeft",0,-2)
-				FarmhandMerchantStockTipTextRight3:ClearAllPoints()
-				FarmhandMerchantStockTipTextRight3:SetPoint("TopLeft",FarmhandMerchantStockTipTextRight2,"BottomLeft",0,-2)
+				Nugget.StockTip:AddDoubleLine(L["On Hand"],onHand,0,255,0,255,255,255)
+				Nugget.StockTip:AddDoubleLine(L["In Bank"],inBank,0,255,0,255,255,255)
+				NuggetMerchantStockTipTextRight2:ClearAllPoints()
+				NuggetMerchantStockTipTextRight2:SetPoint("TopLeft",NuggetMerchantStockTipTextRight1,"BottomLeft",0,-2)
+				NuggetMerchantStockTipTextRight3:ClearAllPoints()
+				NuggetMerchantStockTipTextRight3:SetPoint("TopLeft",NuggetMerchantStockTipTextRight2,"BottomLeft",0,-2)
 			end
 
-			if TipTac then TipTac:AddModifiedTip(Farmhand.StockTip) end
-			Farmhand.StockTip:Show()
-			if not button.FarmhandHooked then
+			if TipTac then TipTac:AddModifiedTip(Nugget.StockTip) end
+			Nugget.StockTip:Show()
+			if not button.NuggetHooked then
 				button:HookScript("OnLeave",function(button)
-					Farmhand.StockTip:Hide()
+					Nugget.StockTip:Hide()
 				end)
-				button.FarmhandHooked = true
+				button.NuggetHooked = true
 			end
 		end
 	end
 end
 
-function Farmhand_ZoneChanged()
+function Nugget_ZoneChanged()
 
 	local Zone, SubZone = GetZoneText(), GetSubZoneText()
 
@@ -199,76 +198,76 @@ function Farmhand_ZoneChanged()
 	local InMarket = SubZone == L["The Halfhill Market"]
 	local InHalfhill = InSunsong or InMarket or SubZone == L["Halfhill"] or Zone == L["Halfhill"]
 	
-	if not InHalfhill and not FH.InHalfhill then return end
+	if not InHalfhill and not NUGGET.InHalfhill then return end
 
-	local LeavingHalfhill = not InHalfhill and FH.InHalfhill
+	local LeavingHalfhill = not InHalfhill and NUGGET.InHalfhill
 
-	local EnteringSunsong = InSunsong and not FH.InSunsong
-	local LeavingSunsong = not InSunsong and FH.InSunsong
+	local EnteringSunsong = InSunsong and not NUGGET.InSunsong
+	local LeavingSunsong = not InSunsong and NUGGET.InSunsong
 
-	local EnteringMarket = InMarket and not FH.InMarket
-	local LeavingMarket = not InMarket and FH.InMarket
+	local EnteringMarket = InMarket and not NUGGET.InMarket
+	local LeavingMarket = not InMarket and NUGGET.InMarket
 	
 	
 	if (LeavingSunsong or LeavingMarket) and not (EnteringSunsong or EnteringMarket) then
-		--print("Leaving Sunsong area. Hiding Farmhand")
-		Farmhand:UnregisterEvent("BAG_UPDATE")
-		Farmhand:UnregisterEvent("MERCHANT_SHOW")
-		Farmhand:UnregisterEvent("MERCHANT_CLOSED")
-		Farmhand:UnregisterEvent("MERCHANT_UPDATE")
-		FarmhandSeeds:Hide()
-		FarmhandTools:Hide()
-		FarmhandPortals:Hide()
-		Farmhand:Hide()
-		UnregisterStateDriver(Farmhand,"visibility")
+		--print("Leaving Sunsong area. Hiding Nugget")
+		Nugget:UnregisterEvent("BAG_UPDATE")
+		Nugget:UnregisterEvent("MERCHANT_SHOW")
+		Nugget:UnregisterEvent("MERCHANT_CLOSED")
+		Nugget:UnregisterEvent("MERCHANT_UPDATE")
+		NuggetSeeds:Hide()
+		NuggetTools:Hide()
+		NuggetPortals:Hide()
+		Nugget:Hide()
+		UnregisterStateDriver(Nugget,"visibility")
 	end
 	
-	if (EnteringSunsong or EnteringMarket) and not (FH.InSunsong or FH.InMarket) then
-		--print("Entering Sunsong area. Updating Farmhand.")
-		Farmhand:RegisterEvent("BAG_UPDATE")
-		Farmhand:RegisterEvent("MERCHANT_SHOW")
-		Farmhand:RegisterEvent("MERCHANT_CLOSED")
-		Farmhand:RegisterEvent("MERCHANT_UPDATE")
-		FarmhandSeeds:Show()
-		Farmhand:Show()
+	if (EnteringSunsong or EnteringMarket) and not (NUGGET.InSunsong or NUGGET.InMarket) then
+		--print("Entering Sunsong area. Updating Nugget.")
+		Nugget:RegisterEvent("BAG_UPDATE")
+		Nugget:RegisterEvent("MERCHANT_SHOW")
+		Nugget:RegisterEvent("MERCHANT_CLOSED")
+		Nugget:RegisterEvent("MERCHANT_UPDATE")
+		NuggetSeeds:Show()
+		Nugget:Show()
 
-		if FarmhandData.HideInCombat then
-			RegisterStateDriver(Farmhand,"visibility","[combat]hide;show")
+		if NuggetData.HideInCombat then
+			RegisterStateDriver(Nugget,"visibility","[combat]hide;show")
 		end
 		
 	end
 	
 	if EnteringSunsong then
-		FarmhandTools:Show()
-		if FarmhandData.ShowPortals then FarmhandPortals:Show() end
-		Farmhand:RegisterEvent("BAG_UPDATE_COOLDOWN")
+		NuggetTools:Show()
+		if NuggetData.ShowPortals then NuggetPortals:Show() end
+		Nugget:RegisterEvent("BAG_UPDATE_COOLDOWN")
 	elseif LeavingSunsong then
-		Farmhand:UnregisterEvent("BAG_UPDATE_COOLDOWN")
-		FarmhandTools:Hide()
-		FarmhandPortals:Hide()
+		Nugget:UnregisterEvent("BAG_UPDATE_COOLDOWN")
+		NuggetTools:Hide()
+		NuggetPortals:Hide()
 	end
 	
 	if EnteringSunsong or EnteringMarket then
-		Farmhand:Show()
-		Farmhand_Update()
+		Nugget:Show()
+		Nugget_Update()
 	end
 	
 	if LeavingHalfhill then
-		Farmhand_DropTools()
+		Nugget_DropTools()
 	end
 	
-	FH.InHalfhill = InHalfhill
-	FH.InMarket = InMarket
-	FH.InSunsong = InSunsong
+	NUGGET.InHalfhill = InHalfhill
+	NUGGET.InMarket = InMarket
+	NUGGET.InSunsong = InSunsong
 	
 end
 
-function Farmhand_ItemPreClick(Button,MouseButton,Down)
+function Nugget_ItemPreClick(Button,MouseButton,Down)
 	if Down and not InCombatLockdown() then
-		local Bag, Slot = Farmhand_FindItemInBags(Button.ItemID)
+		local Bag, Slot = Nugget_FindItemInBags(Button.ItemID)
 		if IsShiftKeyDown() then
 			Button:SetAttribute("type",nil)
-		elseif FH.InSunsong and Button.ItemType == "Seed" and UnitName("target") ~= L["Tilled Soil"] then
+		elseif NUGGET.InSunsong and Button.ItemType == "Seed" and UnitName("target") ~= L["Tilled Soil"] then
 			Button:SetAttribute("type","macro")
 			Button:SetAttribute("macrotext","/targetexact "..L["Tilled Soil"].."\n/use "..Bag.." "..Slot)
 		else
@@ -278,7 +277,7 @@ function Farmhand_ItemPreClick(Button,MouseButton,Down)
 	end
 end
 
-function Farmhand_ItemPostClick(Button,MouseButton,Down)
+function Nugget_ItemPostClick(Button,MouseButton,Down)
 	if Down then return end
 	if not InCombatLockdown() then
 		Button:SetAttribute("type","item")
@@ -287,8 +286,8 @@ function Farmhand_ItemPostClick(Button,MouseButton,Down)
 	end
 end
 
-function Farmhand_ItemOnEnter(Button)
-	if FH.MerchantOpen and Button.ItemType == "Seed" then
+function Nugget_ItemOnEnter(Button)
+	if NUGGET.MerchantOpen and Button.ItemType == "Seed" then
 		ShowContainerSellCursor(Button.Bag,Button.Slot)
 	end
 	GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
@@ -296,172 +295,172 @@ function Farmhand_ItemOnEnter(Button)
 	GameTooltip:Show()
 end
 
-function Farmhand_ItemOnLeave(Button)
-	if FH.MerchantOpen and Button.ItemType == "Seed" then
+function Nugget_ItemOnLeave(Button)
+	if NUGGET.MerchantOpen and Button.ItemType == "Seed" then
 		ResetCursor()
 	end
 	GameTooltip_Hide()
 end
 
-function Farmhand_ButtonOnMouseDown(Button, MouseButton)
-	if IsShiftKeyDown() and MouseButton == "LeftButton" and not Farmhand.isMoving then
-		_,_,_, Farmhand.InitialOffsetX, Farmhand.InitialOffsetY = Farmhand:GetPoint(1)
---		print("InitialOffsetX: "..Farmhand.InitialOffsetX.." InitialOffsetY: "..Farmhand.InitialOffsetY)
-		Farmhand:StartMoving()
-		_,_,_, Farmhand.PickupOffsetX, Farmhand.PickupOffsetY = Farmhand:GetPoint(1)
---		print("PickupOffsetX: "..Farmhand.PickupOffsetX.." PickupOffsetY: "..Farmhand.PickupOffsetY)
-		Farmhand.isMoving = true
-	elseif MouseButton == "RightButton" and Farmhand.isMoving then
-		Farmhand:StopMovingOrSizing()
-		Farmhand.isMoving = false
-		FarmhandData.X, FarmhandData.Y = 0, - UIParent:GetHeight() / 5
-		Farmhand_RunAfterCombat(Farmhand_ResetAnchors)
+function Nugget_ButtonOnMouseDown(Button, MouseButton)
+	if IsShiftKeyDown() and MouseButton == "LeftButton" and not Nugget.isMoving then
+		_,_,_, Nugget.InitialOffsetX, Nugget.InitialOffsetY = Nugget:GetPoint(1)
+--		print("InitialOffsetX: "..Nugget.InitialOffsetX.." InitialOffsetY: "..Nugget.InitialOffsetY)
+		Nugget:StartMoving()
+		_,_,_, Nugget.PickupOffsetX, Nugget.PickupOffsetY = Nugget:GetPoint(1)
+--		print("PickupOffsetX: "..Nugget.PickupOffsetX.." PickupOffsetY: "..Nugget.PickupOffsetY)
+		Nugget.isMoving = true
+	elseif MouseButton == "RightButton" and Nugget.isMoving then
+		Nugget:StopMovingOrSizing()
+		Nugget.isMoving = false
+		NuggetData.X, NuggetData.Y = 0, - UIParent:GetHeight() / 5
+		Nugget_RunAfterCombat(Nugget_ResetAnchors)
 	end
 end
 
-function Farmhand_ButtonOnMouseUp(Button, MouseButton)
-	if MouseButton == "LeftButton" and Farmhand.isMoving then
-		local _,_,_, DropOffsetX, DropOffsetY = Farmhand:GetPoint(1)
+function Nugget_ButtonOnMouseUp(Button, MouseButton)
+	if MouseButton == "LeftButton" and Nugget.isMoving then
+		local _,_,_, DropOffsetX, DropOffsetY = Nugget:GetPoint(1)
 --		print("DropOffsetX: "..DropOffsetX.." DropOffsetY: "..DropOffsetY)
-		Farmhand:StopMovingOrSizing()
-		Farmhand.isMoving = false
-		FarmhandData.X = DropOffsetX - Farmhand.PickupOffsetX + Farmhand.InitialOffsetX
-		FarmhandData.Y = DropOffsetY - Farmhand.PickupOffsetY + Farmhand.InitialOffsetY
---		print("FinalOffsetX: "..FarmhandData.X.." FinalOffsetY: "..FarmhandData.Y)
-		Farmhand_RunAfterCombat(Farmhand_ResetAnchors)
+		Nugget:StopMovingOrSizing()
+		Nugget.isMoving = false
+		NuggetData.X = DropOffsetX - Nugget.PickupOffsetX + Nugget.InitialOffsetX
+		NuggetData.Y = DropOffsetY - Nugget.PickupOffsetY + Nugget.InitialOffsetY
+--		print("FinalOffsetX: "..NuggetData.X.." FinalOffsetY: "..NuggetData.Y)
+		Nugget_RunAfterCombat(Nugget_ResetAnchors)
    end
 end
 
-function Farmhand_ResetAnchors()
-	Farmhand:ClearAllPoints()
-	Farmhand:SetPoint("Center",UIParent,FarmhandData.X,FarmhandData.Y)
+function Nugget_ResetAnchors()
+	Nugget:ClearAllPoints()
+	Nugget:SetPoint("Center",UIParent,NuggetData.X,NuggetData.Y)
 end
 
-function Farmhand_ButtonOnHide()
+function Nugget_ButtonOnHide()
 	if InCombatLockdown() then 
-		Farmhand_RunAfterCombat(Farmhand_ButtonOnHide)
+		Nugget_RunAfterCombat(Nugget_ButtonOnHide)
 		return
 	end
-	if Farmhand.isMoving then
-		Farmhand:StopMovingOrSizing()
-		Farmhand.isMoving = false
-		Farmhand_RunAfterCombat(Farmhand_ResetAnchors)
+	if Nugget.isMoving then
+		Nugget:StopMovingOrSizing()
+		Nugget.isMoving = false
+		Nugget_RunAfterCombat(Nugget_ResetAnchors)
 	end
 end
 
-function Farmhand_SetHideInCombatOption(Value)
-	FarmhandData.HideInCombat = Value
-	if Value and Farmhand:IsShown() then
-		RegisterStateDriver(Farmhand,"visibility","[combat]hide;show")
+function Nugget_SetHideInCombatOption(Value)
+	NuggetData.HideInCombat = Value
+	if Value and Nugget:IsShown() then
+		RegisterStateDriver(Nugget,"visibility","[combat]hide;show")
 	else
-		UnregisterStateDriver(Farmhand,"visibility")
+		UnregisterStateDriver(Nugget,"visibility")
 	end
 end
 
-function Farmhand_SetBagIconOption(Value)
-	FarmhandData.ShowVeggieIconsForBags = Value
-	Farmhand_UpdateButtonIcons(FarmhandSeeds)
+function Nugget_SetBagIconOption(Value)
+	NuggetData.ShowVeggieIconsForBags = Value
+	Nugget_UpdateButtonIcons(NuggetSeeds)
 end
 
-function Farmhand_SetSeedIconOption(Value)
-	FarmhandData.ShowVeggieIconsForSeeds = Value
-	Farmhand_UpdateButtonIcons(FarmhandSeeds)
+function Nugget_SetSeedIconOption(Value)
+	NuggetData.ShowVeggieIconsForSeeds = Value
+	Nugget_UpdateButtonIcons(NuggetSeeds)
 end
 	
-function Farmhand_SetStockTipOption(Value)
-	FarmhandData.ShowStockTip = Value
+function Nugget_SetStockTipOption(Value)
+	NuggetData.ShowStockTip = Value
 
-	if FarmhandData.ShowStockTip then
-		UIDropDownMenu_EnableDropDown(Farmhand.StockTipPositionDropdown)
+	if NuggetData.ShowStockTip then
+		UIDropDownMenu_EnableDropDown(Nugget.StockTipPositionDropdown)
 	else
-		UIDropDownMenu_DisableDropDown(Farmhand.StockTipPositionDropdown)
+		UIDropDownMenu_DisableDropDown(Nugget.StockTipPositionDropdown)
 	end
 
 end
 
-function Farmhand_InitializeStockTipDropdown(frame, level, menuList)
+function Nugget_InitializeStockTipDropdown(frame, level, menuList)
 	local info = UIDropDownMenu_CreateInfo()
-	info.func = Farmhand_SetStockTipPosition
+	info.func = Nugget_SetStockTipPosition
 
 	info.text = L["Below Normal Tooltip"]
 	info.value = "BELOW"
-	info.checked = FarmhandData and FarmhandData.StockTipPosition == "BELOW" or FarmhandData == nil and false
+	info.checked = NuggetData and NuggetData.StockTipPosition == "BELOW" or NuggetData == nil and false
 	UIDropDownMenu_AddButton(info)
 
 	info.text = L["Right of Normal Tooltip"]
 	info.value = "RIGHT"
-	info.checked = FarmhandData and FarmhandData.StockTipPosition == "RIGHT"
+	info.checked = NuggetData and NuggetData.StockTipPosition == "RIGHT"
 	UIDropDownMenu_AddButton(info)
 end
 
-function Farmhand_SetStockTipPosition(info)
-	FarmhandData.StockTipPosition = info.value
-	if FarmhandData.StockTipPosition == "BELOW" then
-		UIDropDownMenu_SetText(Farmhand.StockTipPositionDropdown, L["Below Normal Tooltip"])
+function Nugget_SetStockTipPosition(info)
+	NuggetData.StockTipPosition = info.value
+	if NuggetData.StockTipPosition == "BELOW" then
+		UIDropDownMenu_SetText(Nugget.StockTipPositionDropdown, L["Below Normal Tooltip"])
 	else
-		UIDropDownMenu_SetText(Farmhand.StockTipPositionDropdown, L["Right of Normal Tooltip"])
+		UIDropDownMenu_SetText(Nugget.StockTipPositionDropdown, L["Right of Normal Tooltip"])
 	end
 end
 
-function Farmhand_SetLockToolsOption(Value)
-	FarmhandData.ToolsLocked = Value
+function Nugget_SetLockToolsOption(Value)
+	NuggetData.ToolsLocked = Value
 end
 
-function Farmhand_SetMessagesOption(Value)
-	FarmhandData.PrintScannerMessages = Value
+function Nugget_SetMessagesOption(Value)
+	NuggetData.PrintScannerMessages = Value
 end
 
-function Farmhand_SetSoundsOption(Value)
-	FarmhandData.PlayScannerSounds = Value
+function Nugget_SetSoundsOption(Value)
+	NuggetData.PlayScannerSounds = Value
 end
 
-function Farmhand_SetPortalsOption(Value)
-	FarmhandData.ShowPortals = Value
+function Nugget_SetPortalsOption(Value)
+	NuggetData.ShowPortals = Value
 	if Value then
-		if FH.InSunsong then 
-			FarmhandPortals:Show()
+		if NUGGET.InSunsong then 
+			NuggetPortals:Show()
 		else
-			FarmhandPortals:Hide()
+			NuggetPortals:Hide()
 		end
 	else
-		FarmhandPortals:Hide()
+		NuggetPortals:Hide()
 	end
 end
 
-function Farmhand_SetMiscToolsOption(Value, ItemID)
+function Nugget_SetMiscToolsOption(Value, ItemID)
 	if ItemID == nil then
 		if Value then
-			FarmhandData.ShowMiscTools = FarmhandData.ShowMiscTools or {}
-			for _, v in ipairs(FH.MiscTools) do
-				FarmhandData.ShowMiscTools[v] = true
+			NuggetData.ShowMiscTools = NuggetData.ShowMiscTools or {}
+			for _, v in ipairs(NUGGET.MiscTools) do
+				NuggetData.ShowMiscTools[v] = true
 			end
 		else
-			FarmhandData.ShowMiscTools = nil
+			NuggetData.ShowMiscTools = nil
 		end
 	else
 		if Value then
-			FarmhandData.ShowMiscTools = FarmhandData.ShowMiscTools or {}
-			FarmhandData.ShowMiscTools[ItemID] = true
+			NuggetData.ShowMiscTools = NuggetData.ShowMiscTools or {}
+			NuggetData.ShowMiscTools[ItemID] = true
 		else
-			if FarmhandData.ShowMiscTools then
-				FarmhandData.ShowMiscTools[ItemID] = nil
+			if NuggetData.ShowMiscTools then
+				NuggetData.ShowMiscTools[ItemID] = nil
 			end
 		end
 	end
-	Farmhand_UpdateMiscToolsCheckboxes()
-	Farmhand_Update()
+	Nugget_UpdateMiscToolsCheckboxes()
+	Nugget_Update()
 end
 
-function Farmhand_UpdateButtonIcons(Bar)
+function Nugget_UpdateButtonIcons(Bar)
 	for _, Button in ipairs(Bar.Buttons) do
 		local Icon, SmallIcon
 		if Button.ItemType == "Seed" then
-			Icon = select(10,GetItemInfo(FarmhandData.ShowVeggieIconsForSeeds and (FH.VeggiesBySeed[Button.ItemID] or Button.ItemID) or Button.ItemID))
+			Icon = select(10,GetItemInfo(NuggetData.ShowVeggieIconsForSeeds and (NUGGET.VeggiesBySeed[Button.ItemID] or Button.ItemID) or Button.ItemID))
 			Button.Icon:SetTexture(Icon)
 		elseif Button.ItemType == "SeedBag" then
-			Icon = FarmhandData.ShowVeggieIconsForBags and (FH.VeggiesBySeed[FH.SeedsBySeedBag[Button.ItemID]] or FH.SeedsBySeedBag[Button.ItemID]) or Button.ItemID
+			Icon = NuggetData.ShowVeggieIconsForBags and (NUGGET.VeggiesBySeed[NUGGET.SeedsBySeedBag[Button.ItemID]] or NUGGET.SeedsBySeedBag[Button.ItemID]) or Button.ItemID
 			Icon = select(10,GetItemInfo(Icon))
-			SmallIcon = FarmhandData.ShowVeggieIconsForBags and select(10,GetItemInfo(Button.ItemID))
+			SmallIcon = NuggetData.ShowVeggieIconsForBags and select(10,GetItemInfo(Button.ItemID))
 			Button.Icon:SetTexture(Icon)
 			Button.SmallIcon:SetTexture(SmallIcon)
 		else
@@ -474,11 +473,11 @@ function Farmhand_UpdateButtonIcons(Bar)
 	end
 end
 
-function Farmhand_UpdateBar(Bar)
+function Nugget_UpdateBar(Bar)
 	local Last
 	local Shown = 0
 	local ButtonSpacing = 6
-	local MiscTools = FarmhandData.ShowMiscTools or {}
+	local MiscTools = NuggetData.ShowMiscTools or {}
 	
 	--print("UpdateBar "..Bar:GetName().." with "..#Bar.Buttons.." items.")
 
@@ -496,7 +495,7 @@ function Farmhand_UpdateBar(Bar)
 					Last = Button
 				end
 				if Button.ItemID then
-					Button.Bag, Button.Slot = Farmhand_FindItemInBags(Button.ItemID)
+					Button.Bag, Button.Slot = Nugget_FindItemInBags(Button.ItemID)
 					if Bar.ShowItemCount then
 						if ItemCount > 999 then
 							Button.Count:SetText("***")
@@ -515,7 +514,7 @@ function Farmhand_UpdateBar(Bar)
 		end
 	end
 	
-	Farmhand_UpdateButtonIcons(Bar)
+	Nugget_UpdateButtonIcons(Bar)
 
 	if msqGroups[Bar:GetName()] then msqGroups[Bar:GetName()]:ReSkin() end
 
@@ -528,8 +527,8 @@ function Farmhand_UpdateBar(Bar)
 	Bar:SetHeight(Height or (32 + ButtonSpacing))
 end
 
-function Farmhand_UpdateSeedBagCharges()
-	for _, Button in ipairs(FarmhandSeeds.Buttons) do
+function Nugget_UpdateSeedBagCharges()
+	for _, Button in ipairs(NuggetSeeds.Buttons) do
 		local ItemCount = GetItemCount(Button.ItemID,false,true)
 		if ItemCount > 999 then
 			Button.Count:SetText("***")
@@ -539,27 +538,27 @@ function Farmhand_UpdateSeedBagCharges()
 	end
 end
 
-function Farmhand_Update()
+function Nugget_Update()
 
-	FarmhandSeeds:Update()
-	FarmhandTools:Update()
-	FarmhandPortals:Update()
+	NuggetSeeds:Update()
+	NuggetTools:Update()
+	NuggetPortals:Update()
 	
-	local SBH = FarmhandSeeds:GetHeight() * FarmhandSeeds:GetScale()
-	local TBH = FarmhandTools:GetHeight() * FarmhandTools:GetScale()
-	local PBH = FarmhandPortals:GetHeight() * FarmhandPortals:GetScale()
-	local FHH = SBH + TBH + PBH -- + Farmhand.Backdrop:GetBackdrop().insets.top + Farmhand.Backdrop:GetBackdrop().insets.bottom
-	Farmhand:SetHeight(FHH)
+	local SBH = NuggetSeeds:GetHeight() * NuggetSeeds:GetScale()
+	local TBH = NuggetTools:GetHeight() * NuggetTools:GetScale()
+	local PBH = NuggetPortals:GetHeight() * NuggetPortals:GetScale()
+	local NUGGETH = SBH + TBH + PBH -- + Nugget.Backdrop:GetBackdrop().insets.top + Nugget.Backdrop:GetBackdrop().insets.bottom
+	Nugget:SetHeight(NUGGETH)
 	
-	local SBW = FarmhandSeeds:GetWidth() * FarmhandSeeds:GetScale()
-	local TBW = FarmhandTools:GetWidth() * FarmhandTools:GetScale()
-	local PBW = FarmhandPortals:GetWidth() * FarmhandPortals:GetScale()
-	local FHW = max(SBW,TBW,PBW) -- + Farmhand.Backdrop:GetBackdrop().insets.left + Farmhand.Backdrop:GetBackdrop().insets.right
-	Farmhand:SetWidth(FHW)
+	local SBW = NuggetSeeds:GetWidth() * NuggetSeeds:GetScale()
+	local TBW = NuggetTools:GetWidth() * NuggetTools:GetScale()
+	local PBW = NuggetPortals:GetWidth() * NuggetPortals:GetScale()
+	local NUGGETW = max(SBW,TBW,PBW) -- + Nugget.Backdrop:GetBackdrop().insets.left + Nugget.Backdrop:GetBackdrop().insets.right
+	Nugget:SetWidth(NUGGETW)
 
 end
 
-function Farmhand_CropScannerPreClick(Button,MouseButton,Down)
+function Nugget_CropScannerPreClick(Button,MouseButton,Down)
 	if Down and not InCombatLockdown() then
 		if IsShiftKeyDown() then
 			Button:SetAttribute("type",nil)
@@ -569,16 +568,16 @@ function Farmhand_CropScannerPreClick(Button,MouseButton,Down)
 	end
 end
 
-function Farmhand_CropScannerCheckForTarget()
+function Nugget_CropScannerCheckForTarget()
 	if UnitExists("target") then
 		CropName = UnitName("target")
 		Icon = ICON_LIST[GetRaidTargetIndex("target")] and ICON_LIST[GetRaidTargetIndex("target")].."0|t" or ""
 		local msg = L["Crop Scanner found:"].." "..Icon.." "..CropName
-		tinsert(FarmhandScanButton.ScannerOutput,1,msg)
+		tinsert(NuggetScanButton.ScannerOutput,1,msg)
 	end
 end
 
-function Farmhand_CropScannerPostClick(Button,MouseButton,Down)
+function Nugget_CropScannerPostClick(Button,MouseButton,Down)
 	if Down then return end
 	if not Button:GetAttribute("type") then 
 		if not InCombatLockdown() then
@@ -587,28 +586,28 @@ function Farmhand_CropScannerPostClick(Button,MouseButton,Down)
 		return 
 	end
 	if #Button.ScannerOutput == 0 then
-		if FarmhandData.PrintScannerMessages then
+		if NuggetData.PrintScannerMessages then
 			print(L["Crop Scanner finished."].." "..L["The crops are looking good!"])
 			RaidNotice_AddMessage(RaidBossEmoteFrame,L["The crops are looking good!"], ChatTypeInfo["RAID_BOSS_EMOTE"])
 		end
-		if FarmhandData.PlayScannerSounds then
+		if NuggetData.PlayScannerSounds then
 			PlaySound("QUESTCOMPLETED","SFX")
 		end
 	else
-		if FarmhandData.PrintScannerMessages then
+		if NuggetData.PrintScannerMessages then
 			for _, msg in ipairs(Button.ScannerOutput) do
 				print(msg)
 			end
 			RaidNotice_AddMessage(RaidBossEmoteFrame,L["Some crops need attention!"], ChatTypeInfo["RAID_BOSS_EMOTE"])
 		end
-		if FarmhandData.PlayScannerSounds then
+		if NuggetData.PlayScannerSounds then
 			PlaySound("igQuestFailed","SFX")
 		end
 		wipe(Button.ScannerOutput)
 	end
 end
 
-function Farmhand_ScanButtonOnEnter()
+function Nugget_ScanButtonOnEnter()
 	GameTooltip_SetDefaultAnchor(GameTooltip, UIParent)
 	GameTooltip:ClearLines()
 	GameTooltip:AddLine(L["Crop Scanner"],0,255,0,false)
@@ -616,23 +615,23 @@ function Farmhand_ScanButtonOnEnter()
 	GameTooltip:Show()
 end
 
-function Farmhand_ScanButtonOnLeave()
+function Nugget_ScanButtonOnLeave()
 	GameTooltip_Hide()
 end
 
-function Farmhand_DropTools()
-	if FarmhandData.ToolsLocked then
+function Nugget_DropTools()
+	if NuggetData.ToolsLocked then
 		print(L["Leaving Halfhill."].." "..L["Tools are Locked."])
 	else
 		ClearCursor()
-		for _, ItemID in ipairs(FH.Tools) do
-			local Bag, Slot = Farmhand_FindItemInBags(ItemID)
+		for _, ItemID in ipairs(NUGGET.Tools) do
+			local Bag, Slot = Nugget_FindItemInBags(ItemID)
 			if Bag and Slot then
 				PickupContainerItem(Bag,Slot)
 				if CursorHasItem() then
 					local _, ID, Link = GetCursorInfo()
 					if ID == ItemID then
-						print(L["Leaving Halfhill."].." "..L["Dropping"].." "..Link..".")
+						print(L["Leaving HalNUGGETill."].." "..L["Dropping"].." "..Link..".")
 						DeleteCursorItem()
 					end
 				end
@@ -641,7 +640,7 @@ function Farmhand_DropTools()
 	end
 end
 
-function Farmhand_FindItemInBags(ItemID)
+function Nugget_FindItemInBags(ItemID)
 	local NumSlots
 	for Container = 0, NUM_BAG_SLOTS do
 		NumSlots = GetContainerNumSlots(Container)
@@ -655,19 +654,19 @@ function Farmhand_FindItemInBags(ItemID)
 	end
 end
 
-FH.PostCombatQueue = {}
-function Farmhand_RunAfterCombat(Func,Args)
+NUGGET.PostCombatQueue = {}
+function Nugget_RunAfterCombat(Func,Args)
 	if InCombatLockdown() then
-		Farmhand:RegisterEvent("PLAYER_REGEN_ENABLED")
-		tinsert(FH.PostCombatQueue,{Func=Func,Args=Args})
+		Nugget:RegisterEvent("PLAYER_REGEN_ENABLED")
+		tinsert(NUGGET.PostCombatQueue,{Func=Func,Args=Args})
 		return
 	else
 		Func(unpack(Args or {}))
 	end
 end
-function Farmhand_CombatEnded()
-	for _, Item in ipairs(FH.PostCombatQueue) do
+function Nugget_CombatEnded()
+	for _, Item in ipairs(NUGGET.PostCombatQueue) do
 		Item.Func(unpack(Item.Args or {}))
 	end
-	wipe(FH.PostCombatQueue)
+	wipe(NUGGET.PostCombatQueue)
 end
