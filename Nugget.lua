@@ -1,39 +1,29 @@
-local _, FH = ...
-local L = FH.L
+local _, NUGGET = ...
+local L = NUGGET.L
 
 local msq, msqGroups = nil, {}
 if LibStub then
 	msq = LibStub("Masque",true)
 	if msq then
 		msqGroups = {
-			FarmhandTools = msq:Group("Farmhand","Tools"),
-			FarmhandSeeds = msq:Group("Farmhand","Seeds"),
-			FarmhandPortals = msq:Group("Farmhand","Portals"),
+			Nuggets = msq:Group("Nugget","Nuggets"),
 		}
 	end
 end
 
 local GREEN		= "|cFF00FF00"
 local WHITE		= "|cFFFFFFFF"
-local ORANGE	= "|cFFFF7F00"
+local ORANGE		= "|cFFFF7F00"
 local TEAL		= "|cFF00FF9A"
 
-local FarmhandDataDefaults = {
+local NuggetDataDefaults = {
 	X = 0,
 	Y = -UIParent:GetHeight() / 5,
-	ToolsLocked = false,
-	PrintScannerMessages = true,
-	PlayScannerSounds = true,
-	ShowPortals = true,
 	HideInCombat = true,
-	ShowStockTip = true,
-	StockTipPosition = "BELOW",
-	ShowVeggieIconsForSeeds = false,
-	ShowVeggieIconsForBags = false,
 }
 
-function Farmhand_Initialize()
-	
+function Nugget_Initialize()
+HERE	
 	if FarmhandData == nil then
 		FarmhandData = FarmhandDataDefaults
 	else
